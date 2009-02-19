@@ -8,7 +8,7 @@
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
 
-static char netstat_rcsid[] = "$Id: do_netstat.c 5822 2008-10-01 13:28:07Z rsmrcina $";
+static char netstat_rcsid[] = "$Id$";
 
 static char *netstat_params[] = { "DS:udpInDatagrams:DERIVE:600:0:U", 
 	                          "DS:udpOutDatagrams:DERIVE:600:0:U", 
@@ -525,6 +525,9 @@ int do_netstat_rrd(char *hostname, char *testname, char *classname, char *pagepa
 
 	  case OS_UNKNOWN:
 		errprintf("Host '%s' reports netstat for an unknown OS\n", hostname);
+		return -1;
+
+	  default:
 		return -1;
 	}
 

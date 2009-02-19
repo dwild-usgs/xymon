@@ -11,7 +11,7 @@
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
 
-static char rcsid[] = "$Id: headfoot.c,v 1.53 2006-07-20 16:06:41 henrik Exp $";
+static char rcsid[] = "$Id$";
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -64,6 +64,8 @@ typedef struct treerec_t {
 } treerec_t;
 
 static int backdays = 0, backhours = 0, backmins = 0, backsecs = 0;
+static char hostenv_eventtimestart[20];
+static char hostenv_eventtimeend[20];
 
 typedef struct listrec_t {
 	char *name, *val, *extra;
@@ -327,6 +329,12 @@ void sethostenv_backsecs(int seconds)
 	backsecs = seconds;
 }
 
+void sethostenv_eventtime(time_t starttime, time_t endtime)
+{
+	*hostenv_eventtimestart = *hostenv_eventtimeend = '\0';
+	if (starttime) strftime(hostenv_eventtimestart, sizeof(hostenv_eventtimestart), "%Y/%m/%d@%H:%M:%S", localtime(&starttime));
+	if (endtime) strftime(hostenv_eventtimeend, sizeof(hostenv_eventtimeend), "%Y/%m/%d@%H:%M:%S", localtime(&endtime));
+}
 
 char *wkdayselect(char wkday, char *valtxt, int isdefault)
 {
@@ -453,6 +461,35 @@ static char *eventreport_timestring(time_t timestamp)
 
 	strftime(result, sizeof(result), "%Y/%m/%d@%H:%M:%S", localtime(&timestamp));
 	return result;
+}
+
+static void build_pagepath_dropdown(FILE *output)
+{
+	RbtHandle ptree;
+	void *hwalk;
+	RbtIterator handle;
+
+	ptree = rbtNew(string_compare);
+
+	for (hwalk = first_host(); (hwalk); hwalk = next_host(hwalk, 0)) {
+		char *path = bbh_item(hwalk, BBH_PAGEPATH);
+		char *ptext;
+
+		handle = rbtFind(ptree, path);
+		if (handle != rbtEnd(ptree)) continue;
+
+		ptext = bbh_item(hwalk, BBH_PAGEPATHTITLE);
+		rbtInsert(ptree, ptext, path);
+	}
+
+	for (handle = rbtBegin(ptree); (handle != rbtEnd(ptree)); handle = rbtNext(ptree, handle)) {
+		char *path, *ptext;
+
+		rbtKeyValue(ptree, handle, (void **)&ptext, (void **)&path);
+		fprintf(output, "<option value=\"%s\">%s</option>\n", path, ptext);
+	}
+
+	rbtDelete(ptree);
 }
 
 
@@ -1264,6 +1301,39 @@ void output_parsed(FILE *output, char *templatedata, int bgcolor, time_t selecte
 			t = mktime(tm);
 			fprintf(output, "%s", eventreport_timestring(t));
 		}
+		else if (strncmp(t_start, "EVENTYESTERDAY", 14) == 0) {
+			time_t t = getcurrenttime(NULL);
+			struct tm *tm = localtime(&t);
+
+			tm->tm_mday -= 1;
+			tm->tm_hour = tm->tm_min = tm->tm_sec = 0;
+			tm->tm_isdst = -1;
+			t = mktime(tm);
+			fprintf(output, "%s", eventreport_timestring(t));
+		}
+		else if (strncmp(t_start, "EVENTTODAY", 10) == 0) {
+			time_t t = getcurrenttime(NULL);
+			struct tm *tm = localtime(&t);
+
+			tm->tm_hour = tm->tm_min = tm->tm_sec = 0;
+			tm->tm_isdst = -1;
+			t = mktime(tm);
+			fprintf(output, "%s", eventreport_timestring(t));
+		}
+		else if (strncmp(t_start, "EVENTNOW", 8) == 0) {
+			time_t t = getcurrenttime(NULL);
+			fprintf(output, "%s", eventreport_timestring(t));
+		}
+
+		else if (strncmp(t_start, "PAGEPATH_DROPDOWN", 17) == 0) {
+			build_pagepath_dropdown(output);
+		}
+		else if (strncmp(t_start, "EVENTSTARTTIME", 8) == 0) {
+			fprintf(output, "%s", hostenv_eventtimestart);
+		}
+		else if (strncmp(t_start, "EVENTENDTIME", 8) == 0) {
+			fprintf(output, "%s", hostenv_eventtimeend);
+		}
 
 		else if (*t_start && (savechar == ';')) {
 			/* A "&xxx;" is probably an HTML escape - output unchanged. */
@@ -1439,11 +1509,11 @@ void showform(FILE *output, char *headertemplate, char *formtemplate, int color,
 		inbuf[st.st_size] = '\0';
 		close(formfile);
 
-		headfoot(output, headertemplate, (hostenv_pagepath ? hostenv_pagepath : ""), "header", color);
+		if (headertemplate) headfoot(output, headertemplate, (hostenv_pagepath ? hostenv_pagepath : ""), "header", color);
 		if (pretext) fprintf(output, "%s", pretext);
 		output_parsed(output, inbuf, color, seltime);
 		if (posttext) fprintf(output, "%s", posttext);
-		headfoot(output, headertemplate, (hostenv_pagepath ? hostenv_pagepath : ""), "footer", color);
+		if (headertemplate) headfoot(output, headertemplate, (hostenv_pagepath ? hostenv_pagepath : ""), "footer", color);
 
 		xfree(inbuf);
 	}

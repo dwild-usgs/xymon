@@ -11,7 +11,7 @@
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
 
-static char rcsid[] = "$Id: environ.c,v 1.37 2006-05-28 20:50:22 henrik Exp $";
+static char rcsid[] = "$Id$";
 
 #include <ctype.h>
 #include <string.h>
@@ -31,9 +31,9 @@ const static struct {
 	{ "BBSERVERIP", BBHOSTIP },
 	{ "BBSERVEROS", BBHOSTOS },
 	{ "BBSERVERWWWNAME", BBHOSTNAME },
-	{ "BBSERVERWWWURL", "/hobbit" },
-	{ "BBSERVERCGIURL", "/hobbit-cgi" },
-	{ "BBSERVERSECCGIURL", "/hobbit-cgisecure" },
+	{ "BBSERVERWWWURL", "/xymon" },
+	{ "BBSERVERCGIURL", "/xymon-cgi" },
+	{ "BBSERVERSECCGIURL", "/xymon-cgisecure" },
 	{ "BBLOCATION", "" },
 	{ "PATH", "/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin:"BUILD_HOME"/bin" },
 	{ "BBPORT", "1984" },

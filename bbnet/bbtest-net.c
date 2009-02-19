@@ -8,7 +8,7 @@
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
 
-static char rcsid[] = "$Id: bbtest-net.c,v 1.243 2006-08-07 16:28:22 henrik Exp $";
+static char rcsid[] = "$Id$";
 
 #include <limits.h>
 #include <stdio.h>
@@ -1946,6 +1946,9 @@ int main(int argc, char *argv[])
 		}
 		else if (strcmp(argv[argi], "--no-flags") == 0) {
 			dosendflags = 0;
+		}
+		else if (strcmp(argv[argi], "--shuffle") == 0) {
+			shuffletests = 1;
 		}
 
 		/* Options for PING tests */

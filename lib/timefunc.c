@@ -11,7 +11,7 @@
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
 
-static char rcsid[] = "$Id: timefunc.c,v 1.31 2006-07-20 16:06:41 henrik Exp $";
+static char rcsid[] = "$Id$";
 
 #include <time.h>
 #include <sys/time.h>
@@ -577,5 +577,37 @@ time_t timestr2timet(char *s)
 	return mktime(&tm);
 }
 
+
+time_t eventreport_time(char *timestamp)
+{
+	time_t event = 0;
+	unsigned int year,month,day,hour,min,sec,count;
+	struct tm timeinfo;
+
+	if ((*timestamp) && (*(timestamp + strspn(timestamp, "0123456789")) == '\0'))
+		return (time_t) atol(timestamp);
+
+	count = sscanf(timestamp, "%u/%u/%u@%u:%u:%u",
+		&year, &month, &day, &hour, &min, &sec);
+	if(count != 6) {
+		return -1;
+	}
+	if(year < 1970) {
+		return 0;
+	}
+	else {
+		memset(&timeinfo, 0, sizeof(timeinfo));
+		timeinfo.tm_year  = year - 1900;
+		timeinfo.tm_mon   = month - 1;
+		timeinfo.tm_mday  = day;
+		timeinfo.tm_hour  = hour;
+		timeinfo.tm_min   = min;
+		timeinfo.tm_sec   = sec;
+		timeinfo.tm_isdst = -1;
+		event = mktime(&timeinfo);		
+	}
+
+	return event;
+}
 
 

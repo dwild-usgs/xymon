@@ -8,7 +8,7 @@
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
 
-static char ifstat_rcsid[] = "$Id: do_ifstat.c 5819 2008-09-30 16:37:31Z storner $";
+static char ifstat_rcsid[] = "$Id$";
 
 static char *ifstat_params[] = { "DS:bytesSent:DERIVE:600:0:U", 
 	                         "DS:bytesReceived:DERIVE:600:0:U", 
@@ -262,12 +262,7 @@ int do_ifstat_rrd(char *hostname, char *testname, char *classname, char *pagepat
 			if (pickdata(bol, ifstat_bbwin_pcres[0], 0, &ifname, &rxstr, &txstr)) dmatch = 7;
 			break;
 
-		  case OS_OSF:
-		  case OS_IRIX:
-		  case OS_SNMP:
-		  case OS_WIN32:
-		  case OS_NETWARE_SNMP:
-		  case OS_UNKNOWN:
+		  default:
 			break;
 		}
 
